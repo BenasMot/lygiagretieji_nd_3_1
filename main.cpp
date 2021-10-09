@@ -28,13 +28,22 @@ int main()
 
 void worker(int n)
 {
-    int non_blocking_time = n%2==0 ? 700-(n*150) : 400;
-    int blocking_time = 1000;
+    // Let them all "work" for a bit
+    setTimeout(1000);
 
-    setTimeout(non_blocking_time);
+    // If 0th, endless loop
+    bool myBool = true;
+    while(n == 0) {
+        myBool = !myBool;
+    }
+
+    // If not 1st, keep on "working"
+    if(n != 1) {
+        setTimeout(5000);
+    }
+
     my_res.lock();
-    setTimeout(blocking_time);
-    cout << "This thread (" << n << ") is waiting " << (float)blocking_time/1000 << "s" << endl;
+    cout << "Thread " << n << " is no longer working " << endl;
     my_res.unlock();
 }
 
