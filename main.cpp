@@ -11,7 +11,7 @@ mutex my_res;
 
 int main()
 {
-    int workers = 4;
+    int workers = 8;
 
     thread tid[workers];
     for (int i = 0; i < workers; i++)
@@ -31,14 +31,14 @@ void worker(int n)
     // Let them all "work" for a bit
     setTimeout(1000);
 
-    // If 0th, endless loop
+    // If multiple of 4, endless loop
     bool myBool = true;
-    while(n == 0) {
+    while(n%4 == 0) {
         myBool = !myBool;
     }
 
-    // If not 1st, keep on "working"
-    if(n != 1) {
+    // If not multiple of 4+1, keep on "working"
+    if(n%4 != 1) {
         setTimeout(5000);
     }
 
