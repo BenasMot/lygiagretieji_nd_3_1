@@ -13,6 +13,7 @@ vector<int> randomArray(int size);
 
 int workers = 8;
 int mutex_count = 3;
+int lock_after_itarations = 60;
 
 int main() {
   vector<mutex *> mutexes(3);
@@ -37,19 +38,27 @@ int main() {
 }
 
 void worker(vector<mutex *> mtx, int n) {
+  int iterations = 0;
   while (true) {
-    vector<int> random_order = randomArray(mutex_count);
-
-    for (int i = 0; i < mutex_count; ++i) {
-      mtx[i]->lock();
+    vector<int> random_order(mutex_count);
+    if (iterations % 20 == 0) {
+      random_order = randomArray(mutex_count);
+    } else {
+      random_order = {0, 1, 2};
     }
 
-    cout << "Worker " << n << " locked everything" << endl;
-    setTimeout(200);
+    for (int i = 0; i < mutex_count; ++i) {
+      mtx[random_order[i]]->lock();
+      cout << "Worker " << n << " locked " << i << endl;
+    }
+
+    setTimeout(1000);
 
     for (int i = 0; i < mutex_count; ++i) {
-      mtx[i]->unlock();
+      cout << "Worker " << n << " unlocked " << i << endl;
+      mtx[random_order[i]]->unlock();
     }
+    iterations++;
   }
 }
 
