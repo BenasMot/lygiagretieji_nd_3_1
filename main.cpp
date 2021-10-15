@@ -1,74 +1,61 @@
-#include <algorithm>
-#include <chrono>
 #include <iostream>
 #include <mutex>
-#include <random>
 #include <thread>
-#include <vector>
+
 using namespace std;
 
-void worker(vector<mutex *> mtx, int n);
-void setTimeout(int ms);
-vector<int> randomArray(int size);
+mutex myMutex, myMutex1, myMutex2;
 
+void shared_cout_thread_even(int i);
+void shared_cout_thread_odd(int i);
+void shared_cout_main(int i);
+void worker(int n);
+
+int iterations = 0;
 int workers = 8;
 int mutex_count = 3;
-int lock_after_itarations = 60;
+int dydis = 10;
 
 int main() {
-  vector<mutex *> mutexes(3);
-  for (int i = 0; i < mutex_count; ++i) {
-    mutexes[i] = new mutex();
+  thread tid[workers];
+
+  for (int i = 0; i < workers; ++i) {
+    tid[i] = thread(worker, i);
   }
 
-  thread tid[workers];
-  for (int i = 0; i < workers; ++i) {
-    tid[i] = thread(worker, mutexes, i);
+  for (int i = 0; i > -dydis; i--) {
+    shared_cout_main(i);
   }
 
   for (int i = 0; i < workers; ++i) {
     tid[i].join();
   }
 
-  for (int i = 0; i < mutex_count; ++i) {
-    delete mutexes[i];
-  }
-
   return 0;
 }
 
-void worker(vector<mutex *> mtx, int n) {
-  int iterations = 0;
+void worker(int n) {
   while (true) {
-    vector<int> random_order(mutex_count);
-    if (iterations % 20 == 0) {
-      random_order = randomArray(mutex_count);
-    } else {
-      random_order = {0, 1, 2};
-    }
-
-    for (int i = 0; i < mutex_count; ++i) {
-      mtx[random_order[i]]->lock();
-      cout << "Worker " << n << " locked " << i << endl;
-    }
-
-    setTimeout(1000);
-
-    for (int i = 0; i < mutex_count; ++i) {
-      cout << "Worker " << n << " unlocked " << i << endl;
-      mtx[random_order[i]]->unlock();
-    }
-    iterations++;
+    ++iterations;
+    if (n % 2 == 0 && iterations % 20 == 0)
+      shared_cout_thread_even(n);
+    else
+      shared_cout_thread_odd(n);
   }
 }
+void shared_cout_thread_even(int i) {
+  lock_guard<mutex> g1(myMutex1);
+  lock_guard<mutex> g2(myMutex2);
+  cout << " " << i << " ";
+}
 
-void setTimeout(int ms) { this_thread::sleep_for(chrono::milliseconds(ms)); }
+void shared_cout_thread_odd(int i) {
+  lock_guard<mutex> g2(myMutex2);
+  lock_guard<mutex> g1(myMutex1);
+  cout << " " << i << " ";
+}
 
-vector<int> randomArray(int size) {
-  vector<int> arr(size);
-  for (int i = 0; i < size; ++i) {
-    arr.push_back(i);
-  }
-  shuffle(arr.begin(), arr.end(), default_random_engine(0));
-  return arr;
+void shared_cout_main(int i) {
+  lock_guard<mutex> g(myMutex);
+  cout << " " << i << " ";
 }
