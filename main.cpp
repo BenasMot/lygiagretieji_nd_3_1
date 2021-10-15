@@ -2,6 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <mutex>
+#include <random>
 #include <thread>
 #include <vector>
 using namespace std;
@@ -58,6 +59,6 @@ vector<int> randomArray(int size) {
   for (int i : arr) {
     arr.push_back(i);
   }
-  random_shuffle(arr.begin(), arr.end());
+  shuffle(arr.begin(), arr.end(), default_random_engine());
   return arr;
 }
