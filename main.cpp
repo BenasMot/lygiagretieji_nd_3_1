@@ -39,14 +39,15 @@ int main() {
 void worker(vector<mutex *> mtx, int n) {
   while (true) {
     vector<int> random_order = randomArray(mutex_count);
-    for (auto i : random_order) {
+
+    for (int i = 0; i < mutex_count; ++i) {
       mtx[i]->lock();
     }
 
     cout << "Worker " << n << " locked everything" << endl;
     setTimeout(200);
 
-    for (auto i : random_order) {
+    for (int i = 0; i < mutex_count; ++i) {
       mtx[i]->unlock();
     }
   }
@@ -56,9 +57,9 @@ void setTimeout(int ms) { this_thread::sleep_for(chrono::milliseconds(ms)); }
 
 vector<int> randomArray(int size) {
   vector<int> arr(size);
-  for (int i : arr) {
+  for (int i = 0; i < size; ++i) {
     arr.push_back(i);
   }
-  shuffle(arr.begin(), arr.end(), default_random_engine());
+  shuffle(arr.begin(), arr.end(), default_random_engine(0));
   return arr;
 }
