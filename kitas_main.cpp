@@ -11,6 +11,7 @@ void shared_cout_thread_odd(int i);
 void shared_cout_main(int i);
 void worker(int n);
 
+int iterations = 0;
 int workers = 8;
 int mutex_count = 3;
 int dydis = 10;
@@ -35,7 +36,8 @@ int main() {
 
 void worker(int n) {
   while (true) {
-    if (n % 2 == 0)
+    ++iterations;
+    if (n % 2 == 0 && iterations % 20 == 0)
       shared_cout_thread_even(n);
     else
       shared_cout_thread_odd(n);
