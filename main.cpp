@@ -1,61 +1,147 @@
+#include <stdlib.h>
+
+#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <vector>
+
+#include "banker.h"
+#include "timeout.h"
 
 using namespace std;
 
-mutex myMutex, myMutex1, myMutex2;
+void worker(vector<mutex *> mutexes, int n);
 
-void shared_cout_thread_even(int i);
-void shared_cout_thread_odd(int i);
-void shared_cout_main(int i);
-void worker(int n);
+mutex debug;
+void log(string msg) {
+  debug.lock();
+  cout << msg << endl;
+  debug.unlock();
+}
 
-int iterations = 0;
-int workers = 8;
+// Initial values
 int mutex_count = 3;
-int dydis = 10;
+int worker_count = 8;
 
 int main() {
-  thread tid[workers];
-
-  for (int i = 0; i < workers; ++i) {
-    tid[i] = thread(worker, i);
+  
+  // Initialise mutexes
+  vector<mutex *> mutexes(mutex_count);
+  for (int i = 0; i < mutex_count; ++i) {
+    mutexes[i] = new mutex();
   }
 
-  for (int i = 0; i > -dydis; i--) {
-    shared_cout_main(i);
+  // Launch threads
+  thread threads[worker_count];
+  for (int i = 0; i < worker_count; ++i) {
+    threads[i] = thread(worker, mutexes, i);
   }
 
-  for (int i = 0; i < workers; ++i) {
-    tid[i].join();
+  // Wait for threads to complete execution
+  for (int i = 0; i < worker_count; ++i) {
+    threads[i].join();
   }
 
+  // Cleanup mutexes
+  for (int i = 0; i < mutex_count; ++i) {
+    delete mutexes[i];
+  }
   return 0;
 }
 
-void worker(int n) {
-  while (true) {
-    ++iterations;
-    if (n % 2 == 0 && iterations % 20 == 0)
-      shared_cout_thread_even(n);
-    else
-      shared_cout_thread_odd(n);
+bool randBool() { return rand() % 2; }
+
+vector<vector<bool> > generateState(int iteration) {
+  char type = 'u';
+  if (iteration % 42 > 22) {
+    type = 'r';
+  }
+  if (iteration % 42 == 41) {
+    type = 'l';
+  }
+
+  vector<vector<bool> > state;
+  switch (type) {
+    case 'l':
+      // Locked:
+      // 1 1 1
+      // 1 1 1
+      // 1 1 1
+      for (int i = 0; i < worker_count; ++i) {
+        vector<bool> row;
+        for (int j = 0; j < mutex_count; ++j) {
+          row.push_back(1);
+        }
+        state.push_back(row);
+      }
+      break;
+
+    case 'u':
+      // Unlocked:
+      // 1 0 0 0
+      // 0 1 0 0
+      // 0 0 1 0
+      // 0 0 0 1
+      for (int i = 0; i < worker_count; ++i) {
+        vector<bool> row;
+        for (int j = 0; j < mutex_count; ++j) {
+          bool val = (i == j);
+          row.push_back(val);
+        }
+        state.push_back(row);
+      }
+      break;
+
+    case 'r':
+    default:
+      // Random:
+      // 0 1 1 0
+      // 1 0 0 0
+      // 1 1 0 1
+      // 0 1 0 1
+      for (int i = 0; i < worker_count; ++i) {
+        vector<bool> row;
+        for (int j = 0; j < mutex_count; ++j) {
+          bool val = randBool();
+          row.push_back(randBool());
+        }
+        state.push_back(row);
+      }
+      break;
+  }
+  return state;
+}
+
+// Lock if true in [i][j] place and is doLock. If doLock is false, unock [i][j].
+void changeFromState(vector<vector<bool> > state, vector<mutex *> mutexes,
+                     bool doLock) {
+  for (int i = 0; i < worker_count; ++i) {
+    for (int j = 0; j < mutex_count; ++j) {
+      if (state[i][j]) {
+        if (doLock) {
+          mutexes[j]->lock();
+        } else {
+          mutexes[j]->unlock();
+        }
+      }
+    }
   }
 }
-void shared_cout_thread_even(int i) {
-  lock_guard<mutex> g1(myMutex1);
-  lock_guard<mutex> g2(myMutex2);
-  cout << " " << i << " ";
-}
 
-void shared_cout_thread_odd(int i) {
-  lock_guard<mutex> g2(myMutex2);
-  lock_guard<mutex> g1(myMutex1);
-  cout << " " << i << " ";
-}
+void worker(vector<mutex *> mutexes, int n) {
+  vector<vector<bool> > unlocked = generateState('u');
+  vector<vector<bool> > locked = generateState('l');
 
-void shared_cout_main(int i) {
-  lock_guard<mutex> g(myMutex);
-  cout << " " << i << " ";
+  int iteration = 0;
+  while (true) {
+    vector<vector<bool> > state = generateState(iteration);
+
+    changeFromState(state, mutexes, true);
+    cout << "Test" << n << endl;
+    setTimeout(200);
+    changeFromState(state, mutexes, false);
+
+    iteration++;
+  }
 }

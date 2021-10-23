@@ -4,7 +4,7 @@ project(nd3_1 VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_executable(nd3_1 main.cpp)
+add_executable(nd3_1 main.cpp banker.h timeout.h)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
