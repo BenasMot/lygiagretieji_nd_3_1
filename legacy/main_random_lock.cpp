@@ -48,7 +48,7 @@ void worker(vector<mutex *> mtx, int n) {
     }
 
     for (int i = 0; i < mutex_count; ++i) {
-      mtx[random_order[i]]->lock();
+      mtx[random_order[i]].lock();
       cout << "Worker " << n << " locked " << i << endl;
     }
 
