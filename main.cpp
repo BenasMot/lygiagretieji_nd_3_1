@@ -7,6 +7,7 @@
 
 #include "banker.h"
 #include "generate_state.h"
+#include "timeout.h"
 
 using namespace std;
 
@@ -61,7 +62,8 @@ void changeFromState(vector<vector<bool> > state, Banker banker, bool doLock) {
 void worker(Banker banker, int n) {
   int iteration = 0;
   while (true) {
-    vector<vector<bool> > state = generateState(iteration, worker_count, mutex_count);
+    vector<vector<bool> > state =
+        generateState(iteration, worker_count, mutex_count);
 
     changeFromState(state, banker, true);
     cout << "Test" << n << endl;
