@@ -68,8 +68,13 @@ void worker(Banker banker, int n) {
         generateState(iteration, worker_count, mutex_count);
 
     changeFromState(state, banker, true);
-    cout << "Test" << n << endl;
-    setTimeout(200);
+    setTimeout(600);
+    cout << "------- THREAD " <<n<<" -------" << endl;
+    cout << "Working... " << endl;
+    cout << "Iteration:  " << iteration << endl;
+    cout << "Locking at: " << lock_after << endl;
+    cout << "Random at:  " << random_after << endl;
+    cout << "------------------------" << endl;
     changeFromState(state, banker, false);
 
     iteration++;
