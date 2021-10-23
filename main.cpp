@@ -1,6 +1,5 @@
 #include <stdlib.h>
 
-#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -8,10 +7,11 @@
 
 #include "banker.h"
 #include "timeout.h"
+#include "generate_state.h"
 
 using namespace std;
 
-void worker(vector<mutex *> mutexes, int n);
+void worker(Banker* banker, int n);
 
 mutex debug;
 void log(string msg) {
@@ -25,9 +25,10 @@ int mutex_count = 3;
 int worker_count = 8;
 
 int main() {
-  
+  Banker banker;
   // Initialise mutexes
-  vector<mutex *> mutexes(mutex_count);
+  banker.init(mutex_count);
+  vector<mutex*> mutexes(mutex_count);
   for (int i = 0; i < mutex_count; ++i) {
     mutexes[i] = new mutex();
   }
@@ -35,7 +36,7 @@ int main() {
   // Launch threads
   thread threads[worker_count];
   for (int i = 0; i < worker_count; ++i) {
-    threads[i] = thread(worker, mutexes, i);
+    threads[i] = thread(worker, banker, i);
   }
 
   // Wait for threads to complete execution
@@ -44,103 +45,37 @@ int main() {
   }
 
   // Cleanup mutexes
+  banker.cleanup();
   for (int i = 0; i < mutex_count; ++i) {
     delete mutexes[i];
   }
   return 0;
 }
 
-bool randBool() { return rand() % 2; }
-
-vector<vector<bool> > generateState(int iteration) {
-  char type = 'u';
-  if (iteration % 42 > 22) {
-    type = 'r';
-  }
-  if (iteration % 42 == 41) {
-    type = 'l';
-  }
-
-  vector<vector<bool> > state;
-  switch (type) {
-    case 'l':
-      // Locked:
-      // 1 1 1
-      // 1 1 1
-      // 1 1 1
-      for (int i = 0; i < worker_count; ++i) {
-        vector<bool> row;
-        for (int j = 0; j < mutex_count; ++j) {
-          row.push_back(1);
-        }
-        state.push_back(row);
-      }
-      break;
-
-    case 'u':
-      // Unlocked:
-      // 1 0 0 0
-      // 0 1 0 0
-      // 0 0 1 0
-      // 0 0 0 1
-      for (int i = 0; i < worker_count; ++i) {
-        vector<bool> row;
-        for (int j = 0; j < mutex_count; ++j) {
-          bool val = (i == j);
-          row.push_back(val);
-        }
-        state.push_back(row);
-      }
-      break;
-
-    case 'r':
-    default:
-      // Random:
-      // 0 1 1 0
-      // 1 0 0 0
-      // 1 1 0 1
-      // 0 1 0 1
-      for (int i = 0; i < worker_count; ++i) {
-        vector<bool> row;
-        for (int j = 0; j < mutex_count; ++j) {
-          bool val = randBool();
-          row.push_back(randBool());
-        }
-        state.push_back(row);
-      }
-      break;
-  }
-  return state;
-}
-
 // Lock if true in [i][j] place and is doLock. If doLock is false, unock [i][j].
-void changeFromState(vector<vector<bool> > state, vector<mutex *> mutexes,
-                     bool doLock) {
+void changeFromState(vector<vector<bool> > state, Banker* banker, bool doLock) {
   for (int i = 0; i < worker_count; ++i) {
     for (int j = 0; j < mutex_count; ++j) {
       if (state[i][j]) {
         if (doLock) {
-          mutexes[j]->lock();
+          banker->lock(j);
         } else {
-          mutexes[j]->unlock();
+          banker->unlock(j);
         }
       }
     }
   }
 }
 
-void worker(vector<mutex *> mutexes, int n) {
-  vector<vector<bool> > unlocked = generateState('u');
-  vector<vector<bool> > locked = generateState('l');
-
+void worker(Banker* banker, int n) {
   int iteration = 0;
   while (true) {
-    vector<vector<bool> > state = generateState(iteration);
+    vector<vector<bool> > state = generateState(iteration, worker_count, mutex_count);
 
-    changeFromState(state, mutexes, true);
+    changeFromState(state, banker, true);
     cout << "Test" << n << endl;
     setTimeout(200);
-    changeFromState(state, mutexes, false);
+    changeFromState(state, banker, false);
 
     iteration++;
   }
