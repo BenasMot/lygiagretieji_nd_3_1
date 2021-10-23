@@ -21,10 +21,10 @@ void log(string msg) {
 }
 
 // Initial values
-int mutex_count = 3;
+int mutex_count = 8;
 int worker_count = 8;
-int lock_after = 6;
-int random_after = 3;
+int lock_after = 10;
+int random_after = 10;
 
 int main() {
   // Initialise banker
@@ -33,6 +33,7 @@ int main() {
   // Launch threads
   thread threads[worker_count];
   for (int i = 0; i < worker_count; ++i) {
+    setTimeout(100*i);
     threads[i] = thread(worker, banker, i);
   }
 
@@ -61,8 +62,8 @@ void changeFromState(vector<vector<bool> > state, Banker banker, bool doLock) {
   }
 }
 
+int iteration = 0;
 void worker(Banker banker, int n) {
-  int iteration = 0;
   while (true) {
     vector<vector<bool> > state =
         generateState(iteration, worker_count, mutex_count);
@@ -71,7 +72,7 @@ void worker(Banker banker, int n) {
     setTimeout(600);
     cout << "------- THREAD " <<n<<" -------" << endl;
     cout << "Working... " << endl;
-    cout << "Iteration:  " << iteration << endl;
+    cout << "Iteration:  " << iteration%lock_after << endl;
     cout << "Locking at: " << lock_after << endl;
     cout << "Random at:  " << random_after << endl;
     cout << "------------------------" << endl;
