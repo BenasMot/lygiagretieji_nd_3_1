@@ -23,6 +23,8 @@ void log(string msg) {
 // Initial values
 int mutex_count = 3;
 int worker_count = 8;
+int lock_after = 6;
+int random_after = 3;
 
 int main() {
   // Initialise banker

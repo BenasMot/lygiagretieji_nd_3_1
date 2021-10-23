@@ -5,15 +5,18 @@
 
 using namespace std;
 
+extern int lock_after;
+extern int random_after;
+
 bool randBool() { return rand() % 2; }
 
 vector<vector<bool> > generateState(int iteration, int worker_count,
                                     int mutex_count) {
   char type = 'u';
-  if (iteration % 42 > 22) {
+  if (iteration % lock_after > random_after) {
     type = 'r';
   }
-  if (iteration % 42 == 41) {
+  if (iteration % lock_after == lock_after-1) {
     type = 'l';
   }
 
