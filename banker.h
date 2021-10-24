@@ -14,7 +14,7 @@ class Banker {
 
   void unlock(int i) { this->mutexes[i]->unlock(); }
 
-  void cleanup() {
+  ~Banker() {
     for (int i = 0; i < mutexes.size(); ++i) {
       delete this->mutexes[i];
     }

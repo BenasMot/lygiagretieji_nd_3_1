@@ -42,8 +42,6 @@ int main() {
     threads[i].join();
   }
 
-  // Cleanup mutexes
-  banker.cleanup();
   return 0;
 }
 
