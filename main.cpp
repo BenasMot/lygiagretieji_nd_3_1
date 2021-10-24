@@ -2,7 +2,7 @@
 #include <thread>
 #include <vector>
 
-#include "banker_mock.h"
+#include "banker.h"
 #include "generate_state.h"
 #include "timeout.h"
 
@@ -39,14 +39,10 @@ int main() {
   return 0;
 }
 
-int iteration = 0;
 void worker(Banker banker, int n) {
   while (true) {
-    master.lock();
-    iteration++;
-    master.unlock();
 
-    vector<bool> state = generateState(iteration, mutex_count);
+    vector<bool> state = generateState(mutex_count);
 
     banker.lock(state);
     master.lock();
