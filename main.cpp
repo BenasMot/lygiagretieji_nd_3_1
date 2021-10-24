@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void worker(Banker* banker, int n);
+void worker(Banker banker, int n);
 
 mutex debug;
 void log(string msg) {
@@ -33,7 +33,6 @@ int main() {
   // Launch threads
   thread threads[worker_count];
   for (int i = 0; i < worker_count; ++i) {
-    setTimeout(100 * i);
     threads[i] = thread(worker, banker, i);
   }
 
@@ -50,7 +49,7 @@ int main() {
 int iteration = 0;
 void worker(Banker banker, int n) {
   while (true) {
-    vector<bool> state = generateState(iteration, mutex_count); // 1 0 0 0
+    vector<bool> state = generateState(iteration, mutex_count);
 
     banker.lock(state);
     cout << "------- THREAD " << n << " -------" << endl;
