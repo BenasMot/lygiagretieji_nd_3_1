@@ -69,7 +69,53 @@ Tarkime mūsų pradinės sąlygos yra tokios:
       1 1 1 1
 
 ---
+## Bankininko algoritmas
 
+Programos metu susidaro situacijos, kada gijai reikia daugiau resursų, nei šiuo metu pasiekiama. Tačiau ji pasiimdama visus, kuriuos gali, tačiau laukdama kitų, gali sudaryti aklavietę. Apsisaugoti nuo tokios situacijos galima naudojant bankininko algoritmą. Jis užtikrina, kad gijos, kurios negali pasiimti visų reikiamų resursų, nesudarys aklavietės. 
+
+### Algoritmo paaiškinimas praktiniu pavyzdžiu
+
+Tarkime, kad programoje yra 4 modeliuojami duomenys. Programos pradžioje jig visi bus laisvi. Šią informaciją galime atvaizduoti vektoriumi su 4 duomenimis, kurių būsena gali būti 1 arba 0:
+
+    1 1 1 1
+
+Paleidus gijas, jos pradeda kreiptis į bankininką, prašydamos užrakinti joms reikalingus duomenis. Šiuos duomenis taip pat galime atvaizduoti vektoriumis su 4 binariais elementais. 
+
+Tarkime, kad _gija1_ kreipiasi į bankininką ir prašo užrakinti pirmąjį resursą, pateikdama prašymą:
+
+    1 0 0 0
+
+Bankininkas patikrina, ar reikalingi resursai yra laisvi, lygindamas prašymą su laisvų resursų vektoriumi. Šiuo atveju resursai laisvi, todėl bankininkas užrakina resursą, paleidžia giją ir pasižymi, kad resursas užimtas. Dabar laisvų resursų vektorius atrdodo taip:
+
+    0 1 1 1
+
+Atėjus antrai gijai _gija2_ ir pareikalavus 2 ir 3 resursų:
+    
+    0 1 1 0
+    
+bankininkas juos taip pat užrakina, pasižymi ir paleidžia giją. Dabar laisvų resursų vektorius atrodo taip:
+
+    0 0 0 1
+
+Atėjus trečiai gijai _gija3_ ir pareikalavus duoti resursus:
+
+    1 0 0 1
+
+bankininkas aptinka, kad neturi visų reikiamų resursų, kurių reikalauja gija3, todėl _gija3_ lieka laukti, kol šie resursai atsilaisvins. 
+
+Tačiau kai ateina _gija4_ ir pareikalauja:
+
+    0 0 0 1
+
+bankininkas užrakina resursą ir pasižymėjęs, paleidžia giją.
+
+Dabar _gija3_ turi laukti, kol savo vykdymą pabaigs _gija1_ ir _gija4_.
+
+### Implementacija
+
+Kiekviena gija prieš kritinės sekcijos pradžią ir jos gale kreipiasi į objekto _banker_ metodus _lock(request)_ ir _unlock(request)_ ir paduoda vektorių _true/false_ verčių, kurios nurodo, kurių resursų gijai reikia. Metodo _lock_ viduje, gija patenka į begalinį ciklą, kuriame laukia, kol bus atlaisvinti visi reikalingi resursai. Tik tada užrakinami gijai reikalingi resursai ir gija gali toliau vykdyti savo darbą.
+
+---
 ## Išvedimas
 
 Programos vykdymo metu, konsolės lange galima stebėti išvedamus duomenis, kurie leidžia įvertinti programos būseną. Išvestis atrodo taip:
