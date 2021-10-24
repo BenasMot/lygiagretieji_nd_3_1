@@ -1,7 +1,4 @@
-#include <stdlib.h>
-
 #include <iostream>
-#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -30,7 +27,6 @@ int main() {
   thread threads[worker_count];
 
   for (int i = 0; i < worker_count; ++i) {
-    setTimeout(100);
     threads[i] = thread(worker, banker, i);
   }
   // Wait for threads to complete execution
@@ -43,14 +39,10 @@ int main() {
   return 0;
 }
 
-int iteration = 0;
 void worker(Banker banker, int n) {
   while (true) {
-    master.lock();
-    iteration++;
-    master.unlock();
 
-    vector<bool> state = generateState(iteration, mutex_count);
+    vector<bool> state = generateState(mutex_count);
 
     banker.lock(state);
     master.lock();
@@ -61,7 +53,7 @@ void worker(Banker banker, int n) {
     cout << "Random at:  " << random_after << endl;
     cout << "------------------------" << endl;
     master.unlock();
-    setTimeout(1000);
+    setTimeout(100);
     banker.unlock(state);
   }
 }

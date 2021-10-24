@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -11,7 +9,8 @@ extern int random_after;
 
 bool randBool() { return rand() % 2; }
 
-vector<bool> generateState(int iteration, int mutex_count) {
+static int iteration = 0;
+vector<bool> generateState(int mutex_count) {
   char type = 'u';
   if (iteration % lock_after > random_after) {
     type = 'r';
@@ -27,12 +26,14 @@ vector<bool> generateState(int iteration, int mutex_count) {
       // Locked:
       // 1 1 1
       state = vector<bool>(mutex_count, 1);
+      iteration++;
       break;
 
     case 'u':
       // Unlocked:
       // 1 0 0 0
       state[iteration % mutex_count] = 1;
+      iteration++;
       break;
 
     case 'r':
@@ -42,6 +43,7 @@ vector<bool> generateState(int iteration, int mutex_count) {
       for (int i = 0; i < mutex_count; ++i) {
         state[i] = randBool();
       }
+      iteration++;
       break;
   }
   return state;
