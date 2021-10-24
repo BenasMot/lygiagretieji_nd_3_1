@@ -19,7 +19,7 @@
 
 ## Pradinės vertės
 
-main.cpp[24-27] yra 4 kodo eilutės, kuriose galima nustatyti pagrindinius kintamuosius:
+main.cpp yra 4 kodo eilutės, kuriose galima nustatyti pagrindinius kintamuosius:
 
     int mutex_count = 8;
     int worker_count = 8;
