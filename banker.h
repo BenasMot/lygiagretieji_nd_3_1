@@ -1,6 +1,6 @@
+#include <iostream>
 #include <mutex>
 #include <vector>
-#include <iostream>
 using namespace std;
 
 class Banker {
@@ -12,17 +12,20 @@ class Banker {
     for (int i = 0; i < mutex_count; ++i) {
       this->mutexes.push_back(new mutex());
     }
+    this->available.resize(mutex_count, 1);
   }
+
   void lock(vector<bool> request) {
     while (true) {
       bool can_lock = true;
       vector<bool> result(this->available.size());
 
       for (int i = 0; i < request.size(); ++i) {
-        if (available[i] == request[i]) {
+        if (request[i] && available[i]) {
           result[i] = false;
+        } else if (!request[i]) {
+          result[i] = available[i];
         } else {
-          cout << "PIZDEC" << endl;
           can_lock = false;
           break;
         }
@@ -30,7 +33,9 @@ class Banker {
 
       if (can_lock) {
         for (int i = 0; i < this->available.size(); i++) {
-          this->mutexes[i]->lock();
+          if (request[i]) {
+            this->mutexes[i]->lock();
+          }
         }
         this->available = result;
         break;
@@ -40,7 +45,10 @@ class Banker {
 
   void unlock(vector<bool> request) {
     for (int i = 0; i < request.size(); i++) {
-      this->mutexes[i]->unlock();
+      if (request[i]) {
+        this->mutexes[i]->unlock();
+        this->available[i] = true;
+      }
     }
   }
 

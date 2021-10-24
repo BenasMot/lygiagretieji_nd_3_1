@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include <iostream>
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -18,7 +20,8 @@ vector<bool> generateState(int iteration, int mutex_count) {
     type = 'l';
   }
 
-  vector<bool> state;
+  vector<bool> state(mutex_count, 0);
+
   switch (type) {
     case 'l':
       // Locked:
@@ -29,16 +32,15 @@ vector<bool> generateState(int iteration, int mutex_count) {
     case 'u':
       // Unlocked:
       // 1 0 0 0
-      state[iteration % mutex_count] = true;
+      state[iteration % mutex_count] = 1;
       break;
 
     case 'r':
     default:
       // Random:
       // 0 1 1 0
-      for (int j = 0; j < mutex_count; ++j) {
-        bool val = randBool();
-        state.push_back(randBool());
+      for (int i = 0; i < mutex_count; ++i) {
+        state[i] = randBool();
       }
       break;
   }
