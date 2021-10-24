@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void worker(Banker banker, int n);
+void worker(Banker* banker, int n);
 
 mutex debug;
 void log(string msg) {
@@ -33,7 +33,7 @@ int main() {
   // Launch threads
   thread threads[worker_count];
   for (int i = 0; i < worker_count; ++i) {
-    setTimeout(100*i);
+    setTimeout(100 * i);
     threads[i] = thread(worker, banker, i);
   }
 
@@ -42,39 +42,24 @@ int main() {
     threads[i].join();
   }
 
+  // Cleanup mutexes
+  banker.cleanup();
   return 0;
-}
-
-// Lock if true in [i][j] place and is doLock. If doLock is false, unock [i][j].
-void changeFromState(vector<vector<bool> > state, Banker banker, bool doLock) {
-  for (int i = 0; i < worker_count; ++i) {
-    for (int j = 0; j < mutex_count; ++j) {
-      if (state[i][j]) {
-        if (doLock) {
-          banker.lock(j);
-        } else {
-          banker.unlock(j);
-        }
-      }
-    }
-  }
 }
 
 int iteration = 0;
 void worker(Banker banker, int n) {
   while (true) {
-    vector<vector<bool> > state =
-        generateState(iteration, worker_count, mutex_count);
+    vector<bool> state = generateState(iteration, mutex_count); // 1 0 0 0
 
-    changeFromState(state, banker, true);
-    setTimeout(600);
-    cout << "------- THREAD " <<n<<" -------" << endl;
+    banker.lock(state);
+    cout << "------- THREAD " << n << " -------" << endl;
     cout << "Working... " << endl;
-    cout << "Iteration:  " << iteration%lock_after << endl;
+    cout << "Iteration:  " << iteration % lock_after << endl;
     cout << "Locking at: " << lock_after << endl;
     cout << "Random at:  " << random_after << endl;
     cout << "------------------------" << endl;
-    changeFromState(state, banker, false);
+    banker.unlock(state);
 
     iteration++;
   }
