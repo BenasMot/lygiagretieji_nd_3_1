@@ -1,11 +1,8 @@
-#include <stdlib.h>
-
 #include <iostream>
-#include <mutex>
 #include <thread>
 #include <vector>
 
-#include "banker.h"
+#include "banker_mock.h"
 #include "generate_state.h"
 #include "timeout.h"
 
@@ -30,7 +27,6 @@ int main() {
   thread threads[worker_count];
 
   for (int i = 0; i < worker_count; ++i) {
-    setTimeout(100);
     threads[i] = thread(worker, banker, i);
   }
   // Wait for threads to complete execution
@@ -61,7 +57,7 @@ void worker(Banker banker, int n) {
     cout << "Random at:  " << random_after << endl;
     cout << "------------------------" << endl;
     master.unlock();
-    setTimeout(1000);
+    setTimeout(100);
     banker.unlock(state);
   }
 }
