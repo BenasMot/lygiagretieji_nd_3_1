@@ -1,6 +1,6 @@
-
 #include <stdlib.h>
 
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -12,17 +12,17 @@ bool randBool() { return rand() % 2; }
 
 vector<vector<bool> > generateState(int iteration, int worker_count,
                                     int mutex_count) {
-  char type = 'u';
+  string type = "unlocked";
   if (iteration % lock_after > random_after) {
-    type = 'r';
+    type = "random";
   }
-  if (iteration % lock_after == lock_after-1) {
-    type = 'l';
+  if (iteration % lock_after == lock_after - 1) {
+    type = "locked";
   }
 
   vector<vector<bool> > state;
   switch (type) {
-    case 'l':
+    case "locked":
       // Locked:
       // 1 1 1
       // 1 1 1
@@ -36,7 +36,7 @@ vector<vector<bool> > generateState(int iteration, int worker_count,
       }
       break;
 
-    case 'u':
+    case "unlocked":
       // Unlocked:
       // 1 0 0 0
       // 0 1 0 0
@@ -52,7 +52,7 @@ vector<vector<bool> > generateState(int iteration, int worker_count,
       }
       break;
 
-    case 'r':
+    case "random":
     default:
       // Random:
       // 0 1 1 0
